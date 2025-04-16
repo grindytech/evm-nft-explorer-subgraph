@@ -1,4 +1,4 @@
-import { Address, BigInt, store } from "@graphprotocol/graph-ts";
+import { Address, BigInt, store, log } from "@graphprotocol/graph-ts";
 import { Transfer as TransferEvent } from "../generated/templates/ERC721/ERC721";
 import { TransferSingle as TransferSingleEvent, TransferBatch as TransferBatchEvent } from "../generated/templates/ERC1155/ERC1155";
 import { Transfer as DummyTransferEvent } from "../generated/DummyERC721/ERC721";
@@ -27,11 +27,22 @@ function loadOrCreateCollection(collectionId: string, type: string): Collection 
 
 // Dummy handler for DummyERC721 dataSource (does nothing)
 export function handleDummyTransfer(event: DummyTransferEvent): void {
-  // No-op: prevents indexing for dummy dataSource
+  log.info("handleDummyTransfer called: address={}, tx={}", [
+    event.address.toHexString(),
+    event.transaction.hash.toHexString()
+  ]);
 }
 
 // Handles ERC721 Transfer events
 export function handleTransfer(event: TransferEvent): void {
+  log.info("handleTransfer called: address={}, tx={}, from={}, to={}, tokenId={}", [
+    event.address.toHexString(),
+    event.transaction.hash.toHexString(),
+    event.params.from.toHexString(),
+    event.params.to.toHexString(),
+    event.params.tokenId.toString()
+  ]);
+
   let collectionId = event.address.toHexString();
   let collection = loadOrCreateCollection(collectionId, "ERC721");
 
@@ -85,6 +96,16 @@ export function handleTransfer(event: TransferEvent): void {
 
 // Handles ERC1155 TransferSingle events
 export function handleTransferSingle(event: TransferSingleEvent): void {
+  log.info("handleTransferSingle called: address={}, tx={}, operator={}, from={}, to={}, id={}, value={}", [
+    event.address.toHexString(),
+    event.transaction.hash.toHexString(),
+    event.params.operator.toHexString(),
+    event.params.from.toHexString(),
+    event.params.to.toHexString(),
+    event.params.id.toString(),
+    event.params.value.toString()
+  ]);
+
   let collectionId = event.address.toHexString();
   let collection = loadOrCreateCollection(collectionId, "ERC1155");
 
@@ -131,11 +152,22 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
 
 // Handles ERC1155 TransferBatch events
 export function handleTransferBatch(event: TransferBatchEvent): void {
+  let ids = event.params.ids.map<string>((id) => id.toString());
+  let values = event.params.values.map<string>((value) => value.toString());
+  log.info("handleTransferBatch called: address={}, tx={}, operator={}, from={}, to={}, ids={}, values={}", [
+    event.address.toHexString(),
+    event.transaction.hash.toHexString(),
+    event.params.operator.toHexString(),
+    event.params.from.toHexString(),
+    event.params.to.toHexString(),
+    ids.join(","),
+    values.join(",")
+  ]);
+
   let collectionId = event.address.toHexString();
   let collection = loadOrCreateCollection(collectionId, "ERC1155");
 
   let tokenIds = event.params.ids.map<string>((id) => id.toString());
-  let values = event.params.values.map<string>((value) => value.toString());
   let fromId = event.params.from.toHexString();
   let toId = event.params.to.toHexString();
   let transactionHash = event.transaction.hash.toHexString();
