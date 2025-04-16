@@ -1,0 +1,35 @@
+# Tracks all ERC721 and ERC1155 collections and their balances on EVM.
+
+# Represents a wallet address that owns NFTs.
+type Owner @entity(immutable: false) {
+  id: ID! # Wallet address in lowercase hex (e.g., "0x123...")
+  erc721Balances: [ERC721Balance!]! @derivedFrom(field: "owner") # ERC721 tokens owned
+  erc1155Balances: [ERC1155Balance!]! @derivedFrom(field: "owner") # ERC1155 balances
+}
+
+# Represents an ERC721 or ERC1155 collection contract.
+type Collection @entity(immutable: false) {
+  id: ID! # Contract address in lowercase hex
+  type: String! # "ERC721" or "ERC1155"
+  erc721Balances: [ERC721Balance!]! @derivedFrom(field: "collection") # ERC721 tokens (if ERC721)
+  erc1155Balances: [ERC1155Balance!]! @derivedFrom(field: "collection") # ERC1155 balances (if ERC1155)
+}
+
+# Tracks ownership of ERC721 tokens for an owner in a collection.
+type ERC721Balance @entity(immutable: false) {
+  id: ID! # Format: ownerAddress-collectionAddress (e.g., "0xabc-0x123")
+  collection: Collection! # The collection
+  owner: Owner! # Current owner
+  tokenIds: [String!]! # List of token IDs owned
+  transactionHash: String! # Latest transaction hash
+}
+
+# Tracks non-zero balances of ERC1155 tokens for an owner in a collection.
+type ERC1155Balance @entity(immutable: false) {
+  id: ID! # Format: collectionAddress-ownerAddress-tokenId (e.g., "0x123-0xabc-1")
+  collection: Collection! # The collection
+  owner: Owner! # The owner
+  tokenId: String! # The specific token ID
+  balance: String! # Non-zero balance
+  transactionHash: String! # Latest transaction hash
+}
