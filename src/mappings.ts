@@ -1,7 +1,6 @@
-import { Address, BigInt, store, log } from "@graphprotocol/graph-ts";
+import { BigInt, store, log } from "@graphprotocol/graph-ts";
 import { Transfer as TransferEvent } from "../generated/templates/ERC721/ERC721";
 import { TransferSingle as TransferSingleEvent, TransferBatch as TransferBatchEvent } from "../generated/templates/ERC1155/ERC1155";
-import { Transfer as DummyTransferEvent } from "../generated/DummyERC721/ERC721";
 import { Owner, Collection, ERC721Balance, ERC1155Balance } from "../generated/schema";
 
 // Loads or creates an Owner entity
@@ -23,14 +22,6 @@ function loadOrCreateCollection(collectionId: string, type: string): Collection 
     collection.save();
   }
   return collection;
-}
-
-// Dummy handler for DummyERC721 dataSource (does nothing)
-export function handleDummyTransfer(event: DummyTransferEvent): void {
-  log.info("handleDummyTransfer called: address={}, tx={}", [
-    event.address.toHexString(),
-    event.transaction.hash.toHexString()
-  ]);
 }
 
 // Handles ERC721 Transfer events
